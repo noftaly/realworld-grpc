@@ -1,24 +1,36 @@
-import { defineEntity, p } from '@mikro-orm/postgresql';
+import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
-const ArticleSchema = defineEntity({
-  name: 'Article',
-  tableName: 'articles',
-  properties: {
-    id: p.uuid().primary(),
-    slug: p.string().unique(),
-    title: p.string(),
-    description: p.string().default(''),
-    body: p.text(),
-    tags: p.string().array(),
-    // Plain id column, no MikroORM relation - keeps querying simple for this PoC.
-    authorId: p.uuid(),
-    createdAt: p.datetime().onCreate(() => new Date()),
-    updatedAt: p
-      .datetime()
-      .onCreate(() => new Date())
-      .onUpdate(() => new Date()),
-  },
-});
+@Entity({ tableName: 'articles' })
+export class Article {
+  @PrimaryKey({ type: 'uuid' })
+  id!: string;
 
-export class Article extends ArticleSchema.class {}
-ArticleSchema.setClass(Article);
+  @Property({ type: 'string', unique: true })
+  slug!: string;
+
+  @Property({ type: 'string' })
+  title!: string;
+
+  @Property({ type: 'string', default: '' })
+  description: Opt<string> = '';
+
+  @Property({ type: 'text' })
+  body!: string;
+
+  @Property({ type: 'array' })
+  tags: Opt<string[]> = [];
+
+  // Plain id column, no MikroORM relation - keeps querying simple for this PoC.
+  @Property({ type: 'uuid' })
+  authorId!: string;
+
+  @Property({ type: 'datetime', onCreate: () => new Date() })
+  createdAt: Opt<Date> = new Date();
+
+  @Property({
+    type: 'datetime',
+    onCreate: () => new Date(),
+    onUpdate: () => new Date(),
+  })
+  updatedAt: Opt<Date> = new Date();
+}

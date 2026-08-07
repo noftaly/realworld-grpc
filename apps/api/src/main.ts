@@ -35,7 +35,7 @@ async function bootstrap() {
 
   // PoC schema management: sync the DB to the entity definitions on boot, no migration files.
   const orm = app.get(MikroORM);
-  await orm.schema.update();
+  await orm.schema.updateSchema();
 
   await app.listen();
   console.log('gRPC server listening on 0.0.0.0:50051');

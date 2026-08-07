@@ -1,14 +1,13 @@
-import { defineEntity, p } from '@mikro-orm/postgresql';
+import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
-const FollowSchema = defineEntity({
-  name: 'Follow',
-  tableName: 'follows',
-  properties: {
-    followerId: p.uuid().primary(),
-    followeeId: p.uuid().primary(),
-    createdAt: p.datetime().onCreate(() => new Date()),
-  },
-});
+@Entity({ tableName: 'follows' })
+export class Follow {
+  @PrimaryKey({ type: 'uuid' })
+  followerId!: string;
 
-export class Follow extends FollowSchema.class {}
-FollowSchema.setClass(Follow);
+  @PrimaryKey({ type: 'uuid' })
+  followeeId!: string;
+
+  @Property({ type: 'datetime', onCreate: () => new Date() })
+  createdAt: Opt<Date> = new Date();
+}

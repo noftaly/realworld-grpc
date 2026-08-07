@@ -1,22 +1,30 @@
-import { defineEntity, p } from '@mikro-orm/postgresql';
+import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 // Child of either an article (articleId set) or a user profile (profileOwnerId set) - never both.
-const CommentSchema = defineEntity({
-  name: 'Comment',
-  tableName: 'comments',
-  properties: {
-    id: p.uuid().primary(),
-    body: p.text(),
-    authorId: p.uuid(),
-    articleId: p.uuid().nullable(),
-    profileOwnerId: p.uuid().nullable(),
-    createdAt: p.datetime().onCreate(() => new Date()),
-    updatedAt: p
-      .datetime()
-      .onCreate(() => new Date())
-      .onUpdate(() => new Date()),
-  },
-});
+@Entity({ tableName: 'comments' })
+export class Comment {
+  @PrimaryKey({ type: 'uuid' })
+  id!: string;
 
-export class Comment extends CommentSchema.class {}
-CommentSchema.setClass(Comment);
+  @Property({ type: 'text' })
+  body!: string;
+
+  @Property({ type: 'uuid' })
+  authorId!: string;
+
+  @Property({ type: 'uuid', nullable: true })
+  articleId!: string | null;
+
+  @Property({ type: 'uuid', nullable: true })
+  profileOwnerId!: string | null;
+
+  @Property({ type: 'datetime', onCreate: () => new Date() })
+  createdAt: Opt<Date> = new Date();
+
+  @Property({
+    type: 'datetime',
+    onCreate: () => new Date(),
+    onUpdate: () => new Date(),
+  })
+  updatedAt: Opt<Date> = new Date();
+}

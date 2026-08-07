@@ -1,22 +1,32 @@
-import { defineEntity, p } from '@mikro-orm/postgresql';
+import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
-const UserSchema = defineEntity({
-  name: 'User',
-  tableName: 'users',
-  properties: {
-    id: p.uuid().primary(),
-    username: p.string().unique(),
-    email: p.string().unique(),
-    passwordHash: p.string(),
-    bio: p.string().default(''),
-    image: p.string().default(''),
-    createdAt: p.datetime().onCreate(() => new Date()),
-    updatedAt: p
-      .datetime()
-      .onCreate(() => new Date())
-      .onUpdate(() => new Date()),
-  },
-});
+@Entity({ tableName: 'users' })
+export class User {
+  @PrimaryKey({ type: 'uuid' })
+  id!: string;
 
-export class User extends UserSchema.class {}
-UserSchema.setClass(User);
+  @Property({ type: 'string', unique: true })
+  username!: string;
+
+  @Property({ type: 'string', unique: true })
+  email!: string;
+
+  @Property({ type: 'string' })
+  passwordHash!: string;
+
+  @Property({ type: 'string', default: '' })
+  bio: Opt<string> = '';
+
+  @Property({ type: 'string', default: '' })
+  image: Opt<string> = '';
+
+  @Property({ type: 'datetime', onCreate: () => new Date() })
+  createdAt: Opt<Date> = new Date();
+
+  @Property({
+    type: 'datetime',
+    onCreate: () => new Date(),
+    onUpdate: () => new Date(),
+  })
+  updatedAt: Opt<Date> = new Date();
+}

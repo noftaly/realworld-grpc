@@ -1,14 +1,13 @@
-import { defineEntity, p } from '@mikro-orm/postgresql';
+import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
-const BlockSchema = defineEntity({
-  name: 'Block',
-  tableName: 'blocks',
-  properties: {
-    blockerId: p.uuid().primary(),
-    blockedId: p.uuid().primary(),
-    createdAt: p.datetime().onCreate(() => new Date()),
-  },
-});
+@Entity({ tableName: 'blocks' })
+export class Block {
+  @PrimaryKey({ type: 'uuid' })
+  blockerId!: string;
 
-export class Block extends BlockSchema.class {}
-BlockSchema.setClass(Block);
+  @PrimaryKey({ type: 'uuid' })
+  blockedId!: string;
+
+  @Property({ type: 'datetime', onCreate: () => new Date() })
+  createdAt: Opt<Date> = new Date();
+}

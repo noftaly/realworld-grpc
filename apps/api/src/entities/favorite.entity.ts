@@ -1,14 +1,13 @@
-import { defineEntity, p } from '@mikro-orm/postgresql';
+import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
-const FavoriteSchema = defineEntity({
-  name: 'Favorite',
-  tableName: 'favorites',
-  properties: {
-    userId: p.uuid().primary(),
-    articleId: p.uuid().primary(),
-    createdAt: p.datetime().onCreate(() => new Date()),
-  },
-});
+@Entity({ tableName: 'favorites' })
+export class Favorite {
+  @PrimaryKey({ type: 'uuid' })
+  userId!: string;
 
-export class Favorite extends FavoriteSchema.class {}
-FavoriteSchema.setClass(Favorite);
+  @PrimaryKey({ type: 'uuid' })
+  articleId!: string;
+
+  @Property({ type: 'datetime', onCreate: () => new Date() })
+  createdAt: Opt<Date> = new Date();
+}
