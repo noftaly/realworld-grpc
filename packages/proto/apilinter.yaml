@@ -1,0 +1,42 @@
+# api-linter config. Rules below are disabled repo-wide because they conflict with
+# deliberate design choices of this PoC, not because the protos are sloppy.
+- included_paths:
+    - "**/*.proto"
+  disabled_rules:
+    # gRPC-only service; no REST/JSON transcoding gateway, so no google.api.http annotations.
+    - "core::0127::http-annotation"
+    - "core::0133::http-uri-parent"
+    # Comment resources have two possible parents (article or user) via a plain string
+    # `parent` field, so a single-type google.api.resource_reference isn't expressible.
+    - "core::0133::request-parent-reference"
+    - "core::0132::request-parent-reference"
+    # PoC scope: Comment is only ever accessed through List (no GetComment); User has no
+    # directory-style List (only Get/Lookup), by design.
+    - "core::0121::resource-must-support-get"
+    - "core::0121::resource-must-support-list"
+    # IDs are server-generated (opaque resource names / slugs); no client-specified
+    # resource-id support on Create.
+    - "core::0133::request-id-field"
+    # `password` is an intentional out-of-band auth field on Create/UpdateUser, not a
+    # resource field, so it doesn't fit the standard Create/Update request shape.
+    - "core::0133::request-required-fields"
+    - "core::0133::request-unknown-fields"
+    - "core::0134::request-unknown-fields"
+    - "client-libraries::4232::required-fields"
+    # Lookup* are custom AIP-136 methods keyed by human-readable identifiers
+    # (username/slug), distinct from standard Get (by resource name); the linter's
+    # heuristics can't tell they still return the resource they operate on.
+    - "core::0131::synonyms"
+    - "core::0136::response-message-name"
+    # SignIn is idiomatic auth terminology; renaming to avoid the preposition would be a
+    # breaking client-facing change for no real benefit.
+    - "core::0136::prepositions"
+    # TypeScript-only codegen via ts-proto; no Java client target, so the Java
+    # file-option conventions don't apply.
+    - "core::0191::java-package"
+    - "core::0191::java-outer-classname"
+    - "core::0191::java-multiple-files"
+    - "core::0191::file-layout"
+    # PoC comments are added selectively for non-obvious fields; not enforcing
+    # exhaustive per-element AIP-192 comment coverage.
+    - "core::0192::has-comments"

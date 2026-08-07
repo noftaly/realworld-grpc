@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package realworld.v1;
+
+import "google/api/client.proto";
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// A registered user of the platform.
+message User {
+  option (google.api.resource) = {
+    type: "realworld.example.com/User"
+    pattern: "users/{user}"
+    singular: "user"
+    plural: "users"
+  };
+
+  // Resource name, e.g. "users/42". Opaque identifier, not the username.
+  string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+
+  string username = 2 [(google.api.field_behavior) = REQUIRED];
+  string email = 3 [(google.api.field_behavior) = REQUIRED];
+  string bio = 4 [(google.api.field_behavior) = OPTIONAL];
+  string image = 5 [(google.api.field_behavior) = OPTIONAL];
+
+  // Whether the caller follows this user. Relative to the calling context.
+  bool following = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Whether the caller has blocked this user. Relative to the calling context.
+  bool blocked = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  google.protobuf.Timestamp create_time = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp update_time = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// AIP-133: top-level create, no parent. Doubles as signup.
+message CreateUserRequest {
+  User user = 1 [(google.api.field_behavior) = REQUIRED];
+  string password = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// AIP-131. `name` also accepts the alias "users/me" for the authenticated caller.
+message GetUserRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "realworld.example.com/User"
+  ];
+}
+
+// AIP-134.
+message UpdateUserRequest {
+  User user = 1 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Optional new password. Only applied when set.
+  string password = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// Custom lookup by the human-readable username, for username-based routing.
+message LookupUserRequest {
+  string username = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message FollowUserRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "realworld.example.com/User"
+  ];
+}
+
+message UnfollowUserRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "realworld.example.com/User"
+  ];
+}
+
+message BlockUserRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "realworld.example.com/User"
+  ];
+}
+
+message UnblockUserRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "realworld.example.com/User"
+  ];
+}
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (User) {
+    option (google.api.method_signature) = "user";
+  }
+  rpc GetUser(GetUserRequest) returns (User) {
+    option (google.api.method_signature) = "name";
+  }
+  rpc UpdateUser(UpdateUserRequest) returns (User) {
+    option (google.api.method_signature) = "user,update_mask";
+  }
+  rpc LookupUser(LookupUserRequest) returns (User);
+  rpc FollowUser(FollowUserRequest) returns (User);
+  rpc UnfollowUser(UnfollowUserRequest) returns (User);
+  rpc BlockUser(BlockUserRequest) returns (User);
+  rpc UnblockUser(UnblockUserRequest) returns (User);
+}

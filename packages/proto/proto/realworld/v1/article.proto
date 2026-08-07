@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package realworld.v1;
+
+import "google/api/client.proto";
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+message Article {
+  option (google.api.resource) = {
+    type: "realworld.example.com/Article"
+    pattern: "articles/{article}"
+    singular: "article"
+    plural: "articles"
+  };
+
+  // Resource name, e.g. "articles/9f2c". Opaque identifier, distinct from slug.
+  string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+
+  // Human-readable, URL-friendly identifier derived from title. Unique.
+  string slug = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  string title = 3 [(google.api.field_behavior) = REQUIRED];
+  string description = 4 [(google.api.field_behavior) = OPTIONAL];
+  string body = 5 [(google.api.field_behavior) = REQUIRED];
+  repeated string tags = 6 [(google.api.field_behavior) = OPTIONAL];
+
+  string author = 7 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (google.api.resource_reference).type = "realworld.example.com/User"
+  ];
+
+  int32 favorite_count = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Whether the calling user has favorited this article.
+  bool favorited = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  google.protobuf.Timestamp create_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp update_time = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message CreateArticleRequest {
+  Article article = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetArticleRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "realworld.example.com/Article"
+  ];
+}
+
+// Custom lookup by slug, used for slug-based routing (e.g. /article/:slug).
+message LookupArticleRequest {
+  string slug = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// AIP-132/158/160. `filter` supports `author="username"` and `favorited_by="username"`.
+message ListArticlesRequest {
+  int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  string filter = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message ListArticlesResponse {
+  repeated Article articles = 1;
+  string next_page_token = 2;
+}
+
+message UpdateArticleRequest {
+  Article article = 1 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message DeleteArticleRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "realworld.example.com/Article"
+  ];
+}
+
+message FavoriteArticleRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "realworld.example.com/Article"
+  ];
+}
+
+message UnfavoriteArticleRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "realworld.example.com/Article"
+  ];
+}
+
+service ArticleService {
+  rpc CreateArticle(CreateArticleRequest) returns (Article) {
+    option (google.api.method_signature) = "article";
+  }
+  rpc GetArticle(GetArticleRequest) returns (Article) {
+    option (google.api.method_signature) = "name";
+  }
+  rpc LookupArticle(LookupArticleRequest) returns (Article);
+  rpc ListArticles(ListArticlesRequest) returns (ListArticlesResponse);
+  rpc UpdateArticle(UpdateArticleRequest) returns (Article) {
+    option (google.api.method_signature) = "article,update_mask";
+  }
+  rpc DeleteArticle(DeleteArticleRequest) returns (google.protobuf.Empty) {
+    option (google.api.method_signature) = "name";
+  }
+  rpc FavoriteArticle(FavoriteArticleRequest) returns (Article);
+  rpc UnfavoriteArticle(UnfavoriteArticleRequest) returns (Article);
+}

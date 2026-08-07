@@ -1,0 +1,45 @@
+{
+  "name": "@repo/proto",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./nestjs": {
+      "types": "./dist/src/nestjs.d.ts",
+      "default": "./dist/src/nestjs.js"
+    },
+    "./client": {
+      "types": "./dist/src/client.d.ts",
+      "default": "./dist/src/client.js"
+    }
+  },
+  "files": [
+    "dist",
+    "proto",
+    "proto-vendor"
+  ],
+  "scripts": {
+    "buf:deps": "buf dep update",
+    "generate": "buf generate",
+    "build": "npm run generate && tsc -p tsconfig.json",
+    "lint:proto": "buf lint",
+    "lint:aip": "buf build -o .aip-descriptor.binpb --exclude-imports=false && api-linter --config apilinter.yaml --descriptor-set-in .aip-descriptor.binpb --skip-compilation --set-exit-status realworld/v1/article.proto realworld/v1/auth.proto realworld/v1/comment.proto realworld/v1/user.proto"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.13.0",
+    "@grpc/grpc-js": "^1.14.4",
+    "@nestjs/microservices": "^11.1.28",
+    "protobufjs": "^8.7.1",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "^1.72.0",
+    "@repo/typescript-config": "*",
+    "ts-proto": "^2.12.0",
+    "typescript": "5.9.2"
+  }
+}

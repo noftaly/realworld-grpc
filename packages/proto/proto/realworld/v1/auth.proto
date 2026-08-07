@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package realworld.v1;
+
+import "google/api/field_behavior.proto";
+import "realworld/v1/user.proto";
+
+// AIP-136 custom method: exchanges credentials for a session token.
+message SignInRequest {
+  string email = 1 [(google.api.field_behavior) = REQUIRED];
+  string password = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message SignInResponse {
+  string token = 1;
+  User user = 2;
+}
+
+service AuthService {
+  rpc SignIn(SignInRequest) returns (SignInResponse);
+}

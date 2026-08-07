@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package realworld.v1;
+
+import "google/api/client.proto";
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// A comment. Child of either an article or a user profile.
+message Comment {
+  option (google.api.resource) = {
+    type: "realworld.example.com/Comment"
+    pattern: "articles/{article}/comments/{comment}"
+    pattern: "users/{user}/comments/{comment}"
+    singular: "comment"
+    plural: "comments"
+  };
+
+  string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+  string body = 2 [(google.api.field_behavior) = REQUIRED];
+
+  string author = 3 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (google.api.resource_reference).type = "realworld.example.com/User"
+  ];
+
+  google.protobuf.Timestamp create_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp update_time = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// AIP-133. `parent` is "articles/{article}" or "users/{user}".
+message CreateCommentRequest {
+  string parent = 1 [(google.api.field_behavior) = REQUIRED];
+  Comment comment = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListCommentsRequest {
+  string parent = 1 [(google.api.field_behavior) = REQUIRED];
+  int32 page_size = 2 [(google.api.field_behavior) = OPTIONAL];
+  string page_token = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message ListCommentsResponse {
+  repeated Comment comments = 1;
+  string next_page_token = 2;
+}
+
+message UpdateCommentRequest {
+  Comment comment = 1 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message DeleteCommentRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "realworld.example.com/Comment"
+  ];
+}
+
+service CommentService {
+  rpc CreateComment(CreateCommentRequest) returns (Comment) {
+    option (google.api.method_signature) = "parent,comment";
+  }
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse) {
+    option (google.api.method_signature) = "parent";
+  }
+  rpc UpdateComment(UpdateCommentRequest) returns (Comment) {
+    option (google.api.method_signature) = "comment,update_mask";
+  }
+  rpc DeleteComment(DeleteCommentRequest) returns (google.protobuf.Empty) {
+    option (google.api.method_signature) = "name";
+  }
+}

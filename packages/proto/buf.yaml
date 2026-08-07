@@ -1,0 +1,16 @@
+version: v2
+modules:
+  - path: proto
+deps:
+  - buf.build/googleapis/googleapis
+lint:
+  use:
+    - STANDARD
+  except:
+    # AIP-131/134/136 standard methods return the resource itself (User, Article, ...),
+    # so the same message is legitimately reused as the response of several RPCs.
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    - RPC_RESPONSE_STANDARD_NAME
+breaking:
+  use:
+    - FILE
